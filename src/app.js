@@ -1,36 +1,36 @@
 const express = require('express');
+const connectDb = require('./config/database');
+const { User } = require('./models/user.models');
+console.log(User);
 
 const app = express();
 
-const { adminAuth, userAuth } = require('./middlewares/auth.middleware');
-app.use('/admin', adminAuth);
+app.post('/signup', async (req, res) => {
+  // instance of the User model
+  const user = new User({
+    firstName: 'Addarsh',
+    lastName: 'Jha',
+  });
 
-app.get('/user/profile', userAuth, (req, res) => {
-  res.send('All user fetched');
-});
-
-app.get('/admin/getAllUsers', (req, res) => {
-  res.send('All user fetched');
-});
-
-//error handling
-app.get('/user', (req, res) => {
-  // try {
-  //logic for finding the user
-  throw new Error('Random error');
-  // } catch (error) {
-  //   console.log(error.message);
-  //   res.status(401).send('Error occurred');
-  // }
-});
-
-//error handler : Always in the last for uncaught err
-app.use((err, req, res, next) => {
-  if (err) {
-    res.send('Something Broke');
+  try {
+    await user.save();
+    res.status(201).send('User saved successfully');
+  } catch (err) {
+    res.status(500).send('Error in saving the user');
+    console.error(err);
   }
 });
 
-app.listen(3000, (err) => {
-  console.log('App is running');
-});
+connectDb()
+  .then(() => {
+    console.log('Database is connected !!');
+    app.listen(3000, (err) => {
+      if (err) {
+        console.log(err.message);
+      }
+      console.log('Server is up and running');
+    });
+  })
+  .catch((err) => {
+    console.log('Database connection failed !');
+  });
