@@ -25,7 +25,7 @@ app.get('/user', (req, res) => {
 });
 
 //error handler : Always in the last for uncaught err
-app.use('/', (err, req, res, next) => {
+app.use((err, req, res, next) => {
   if (err) {
     res.send('Something Broke');
   }
