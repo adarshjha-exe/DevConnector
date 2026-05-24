@@ -61,6 +61,32 @@ app.get('/user', async (req, res) => {
   }
 });
 
+app.delete('/user', async (req, res) => {
+  try {
+    const userId = req.body.id;
+    await User.findByIdAndDelete(userId);
+    res.status(200).send('User deleted successfully');
+  } catch (error) {
+    res.status(500).json({
+      message: 'something went wrong',
+    });
+  }
+});
+
+app.patch('/user', async (req, res) => {
+  try {
+    const userId = req.body.id;
+    await User.findByIdAndUpdate(userId, req.body);
+    res.status(200).send({
+      message: 'User updated successfully',
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'something went wrong',
+    });
+  }
+});
+
 connectDb()
   .then(() => {
     console.log('Database is connected !!');
