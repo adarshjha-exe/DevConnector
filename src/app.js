@@ -6,6 +6,7 @@ console.log(User);
 const app = express();
 app.use(express.json());
 
+//signup
 app.post('/signup', async (req, res) => {
   // instance of the User model
   const user = new User(req.body);
@@ -16,6 +17,47 @@ app.post('/signup', async (req, res) => {
   } catch (err) {
     res.status(500).send('Error in saving the user');
     console.error(err);
+  }
+});
+
+// GET -/feed (get all user)
+app.get('/feed', async (req, res) => {
+  try {
+    const users = await User.find();
+    if (users) {
+      res.status(200).send(users);
+    } else {
+      res.status(404).json({
+        status: 'Failed',
+        reason: 'User not found',
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: 'something went wrong',
+    });
+  }
+});
+
+// GET /user by firstName
+app.get('/user', async (req, res) => {
+  const name = req.body.name;
+  console.log(name);
+  try {
+    const user = await User.findOne({ firstName: name });
+    console.log(user);
+    if (user) {
+      res.status(200).send(user);
+    } else {
+      res.status(404).json({
+        status: 'Failed',
+        reason: 'User not found',
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: 'something went wrong',
+    });
   }
 });
 
