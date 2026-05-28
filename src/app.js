@@ -15,8 +15,8 @@ app.post('/signup', async (req, res) => {
     await user.save();
     res.status(201).send('User saved successfully');
   } catch (err) {
-    res.status(500).send('Error in saving the user');
-    console.error(err);
+    res.status(500).send(`Error in saving the user ${err.message}`);
+    console.error(err.message);
   }
 });
 
@@ -76,13 +76,14 @@ app.delete('/user', async (req, res) => {
 app.patch('/user', async (req, res) => {
   try {
     const userId = req.body.id;
-    await User.findByIdAndUpdate(userId, req.body);
+
+    await User.findByIdAndUpdate(userId, req.body, { runValidators: true });
     res.status(200).send({
       message: 'User updated successfully',
     });
   } catch (error) {
     res.status(500).json({
-      message: 'something went wrong',
+      message: error.message,
     });
   }
 });
