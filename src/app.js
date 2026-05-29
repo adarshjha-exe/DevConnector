@@ -1,6 +1,8 @@
 const express = require('express');
 const connectDb = require('./config/database');
 const { User } = require('./models/user.models');
+const { validateSignup } = require('./utils/validateSignup');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(express.json());
@@ -26,9 +28,37 @@ app.post('/signup', async (req, res) => {
     if (!isAllowed) {
       throw new Error('Invalid field in the request');
     }
+    // validator
+    validateSignup(req.body);
+
+    // destructor the required fields
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      age,
+      gender,
+      photoUrl,
+      about,
+      skills,
+    } = req.body;
+
+    // hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // instance of the User model
-    const user = new User(req.body);
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      age,
+      gender,
+      photoUrl,
+      about,
+      skills,
+    });
     await user.save();
     res.status(201).send('User saved successfully');
   } catch (err) {
