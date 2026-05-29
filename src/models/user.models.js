@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const userSchema = new mongoose.Schema(
   {
@@ -22,6 +23,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
       required: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error('Invalid Email Id');
+        }
+      },
     },
     password: {
       type: String,
@@ -42,6 +48,11 @@ const userSchema = new mongoose.Schema(
     photoUrl: {
       type: String,
       default: 'https://www.mjunction.in/wp-content/uploads/2020/09/Dummy.jpg',
+      validate(value) {
+        if (!validator.isURL(value)) {
+          throw new Error('Not a valid Photo URL');
+        }
+      },
     },
     about: {
       type: String,
