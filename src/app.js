@@ -1,21 +1,38 @@
 const express = require('express');
 const connectDb = require('./config/database');
 const { User } = require('./models/user.models');
-console.log(User);
 
 const app = express();
 app.use(express.json());
 
-//signup
 app.post('/signup', async (req, res) => {
-  // instance of the User model
-  const user = new User(req.body);
-
+  // Allowed field
+  const ALLOWED_FIELDS = [
+    'firstName',
+    'lastName',
+    'email',
+    'password',
+    'age',
+    'gender',
+    'photoUrl',
+    'about',
+    'skills',
+  ];
   try {
+    const isAllowed = Object.keys(req.body).every((key) => {
+      return ALLOWED_FIELDS.includes(key);
+    });
+
+    if (!isAllowed) {
+      throw new Error('Invalid field in the request');
+    }
+
+    // instance of the User model
+    const user = new User(req.body);
     await user.save();
     res.status(201).send('User saved successfully');
   } catch (err) {
-    res.status(500).send(`Error in saving the user ${err.message}`);
+    res.status(500).send(`Error in saving the user : ${err.message}`);
     console.error(err.message);
   }
 });
@@ -73,9 +90,28 @@ app.delete('/user', async (req, res) => {
   }
 });
 
-app.patch('/user', async (req, res) => {
+app.patch('/user/:id', async (req, res) => {
   try {
-    const userId = req.body.id;
+    const data = req.body;
+    const userId = req.params.id;
+    const ALLOWED_UPDATE = [
+      'firstName',
+      'lastName',
+      'password',
+      'age',
+      'gender',
+      'skills',
+    ];
+    const isAllowed = Object.keys(data).every((field) => {
+      return ALLOWED_UPDATE.includes(field);
+    });
+
+    if (!isAllowed) {
+      throw new Error('Not allowed to updated this field');
+    }
+    if (data?.skills?.length > 10) {
+      throw new Error('Not allowed to add more than 10 skills');
+    }
 
     await User.findByIdAndUpdate(userId, req.body, { runValidators: true });
     res.status(200).send({
