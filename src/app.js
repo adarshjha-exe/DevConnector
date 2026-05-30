@@ -85,9 +85,14 @@ app.post('/login', async (req, res) => {
     }
 
     // generate JWT token
-    const token = jwt.sign({ id: user._id }, 'MY_SECRET_KEY_DUMMY');
+    const token = jwt.sign({ id: user._id }, 'MY_SECRET_KEY_DUMMY', {
+      expiresIn: '7d',
+    });
     //sending token in cookies
-    res.cookie('token', token);
+    res.cookie('token', token, {
+      sameSite: 'strict',
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
 
     res.status(200).json({
       message: 'Logged in successfully',
