@@ -110,7 +110,9 @@ app.get('/profile', authUser, async (req, res) => {
   }
 });
 
-
+app.post('/sendConnection', authUser, (req, res) => {
+  res.status(200).send(`Connection request sent by ${req.user.firstName}`);
+});
 
 connectDb()
   .then(() => {
