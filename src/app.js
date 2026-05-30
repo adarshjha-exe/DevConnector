@@ -3,9 +3,11 @@ const connectDb = require('./config/database');
 const { User } = require('./models/user.models');
 const { validateSignup } = require('./utils/validateSignup');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 app.post('/signup', async (req, res) => {
   // Allowed field
@@ -79,7 +81,8 @@ app.post('/login', async (req, res) => {
     if (!isValidPassword) {
       throw new Error('Invalid credentials');
     }
-
+    const token = 'fkjeiwoy896dbkjewgruei';
+    res.cookie('token', token);
     res.status(200).json({
       message: 'Logged in successfully',
     });
@@ -88,6 +91,13 @@ app.post('/login', async (req, res) => {
       message: `Login failed, reason : ${error.message}`,
     });
   }
+});
+
+app.get('/profile', (req, res) => {
+  const cookieData = req.cookies;
+  const { token } = cookieData;
+  console.log(token);
+  res.status(200).send('Profile fetched!');
 });
 
 // GET -/feed (get all user)
