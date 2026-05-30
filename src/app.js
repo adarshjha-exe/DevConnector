@@ -4,6 +4,7 @@ const { User } = require('./models/user.models');
 const { validateSignup } = require('./utils/validateSignup');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 app.use(express.json());
@@ -81,8 +82,12 @@ app.post('/login', async (req, res) => {
     if (!isValidPassword) {
       throw new Error('Invalid credentials');
     }
-    const token = 'fkjeiwoy896dbkjewgruei';
+
+    // generate JWT token
+    const token = jwt.sign({ id: user._id }, 'MY_SECRET_KEY_DUMMY');
+    //sending token in cookies
     res.cookie('token', token);
+
     res.status(200).json({
       message: 'Logged in successfully',
     });
@@ -93,11 +98,27 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/profile', (req, res) => {
-  const cookieData = req.cookies;
-  const { token } = cookieData;
-  console.log(token);
-  res.status(200).send('Profile fetched!');
+app.get('/profile', async (req, res) => {
+  try {
+    const cookieData = req.cookies;
+    const { token } = cookieData;
+    if (!token) {
+      throw new Error('Invalid token');
+    }
+
+    const dataFromCookie = jwt.verify(token, 'MY_SECRET_KEY_DUMMY');
+    const userId = dataFromCookie?.id;
+
+    const user = await User.findOne({ _id: userId });
+    if (!user) {
+      throw new Error('User not fetched form DB');
+    }
+    res.status(200).send(user);
+  } catch (error) {
+    res.status(500).json({
+      message: `Profile fetch failed, reason : ${error.message}`,
+    });
+  }
 });
 
 // GET -/feed (get all user)
