@@ -6,10 +6,18 @@ const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const { authUser } = require('./middlewares/authUser');
+const { authRouter } = require('./routes/auth.router');
+const { profileRouter } = require('./routes/profile.router');
+const { requestRouter } = require('./routes/request.router');
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+
+// import the routers
+app.use('/', authRouter);
+app.use('/', profileRouter);
+app.use('/', requestRouter);
 
 app.post('/signup', async (req, res) => {
   // Allowed field
