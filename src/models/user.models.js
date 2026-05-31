@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema(
   {
@@ -63,6 +65,19 @@ const userSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// getJWT() automatically attach with all User document
+userSchema.methods.getJWT = function () {
+  // this points to the user instance
+  const token = jwt.sign({ id: this._id }, 'MY_SECRET_KEY_DUMMY', {
+    expiresIn: '7d',
+  });
+  return token;
+};
+
+userSchema.methods.verifyPassword = async function (password) {
+  const isValidPassword = await bcrypt.compare(password, this.password);
+  return isValidPassword;
+};
 const User = mongoose.model('User', userSchema);
 
 module.exports = {
