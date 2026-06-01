@@ -100,15 +100,8 @@ authRouter.post('/login', async (req, res) => {
 
 authRouter.post('/logout', authUser, (req, res, next) => {
   const user = req.user;
-  // Expire the cookie immediately; otherwise the cookie will still exist with a null(j%3Anull) value.
-  // Method 1 :
-  // res.cookie('token', null, {
-  //   expires: new Date(Date.now()),
-  // });
 
-  // Method 2:
   res.clearCookie('token');
-
   res.status(200).send('Logout Successfully');
 });
 
