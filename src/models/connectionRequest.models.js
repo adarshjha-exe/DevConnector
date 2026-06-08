@@ -26,20 +26,16 @@ const connectionRequestSchema = new mongoose.Schema(
 
 // pre hook : to check toUser != fromUser
 connectionRequestSchema.pre('save', async function () {
-  // "this" inside the hook = the document about to be saved. In this case it is : connection
-  /**
-   * const connection = new ConnectionRequest({
-   *   fromUserId,
-   *   toUserId,
-   *   status,
-   * });
-   * const data = await connection.save();
-   */
-  // === (compares object references), .equals (ObjectId has a built-in .equals() method)
   if (this.fromUserId.equals(this.toUserId)) {
     throw new Error("You can't send a request to yourself");
   }
 });
+
+// compound index
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
+
+// index
+connectionRequestSchema.index({ toUserId: 1 });
 
 const ConnectionRequest = new mongoose.model(
   'ConnectionRequest',

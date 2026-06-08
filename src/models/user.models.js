@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      unique: true,
+      unique: true,  // creates a Unique Index on email — no two users can have the same email, enforced at DB level
       trim: true,
       lowercase: true,
       required: true,
