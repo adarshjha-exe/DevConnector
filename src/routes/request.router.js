@@ -123,15 +123,22 @@ requestRouter.get('/users/allConnection', authUser, async (req, res) => {
     const loggedInUser = req.user._id;
     //BUGGY CODE : Find all accepted requests where someone sent me a request and I accepted it | BUG : what if i sent the friend request to virat and virat accepted it ? in that case it will not show those connections.
     const data = await ConnectionRequest.find({
-      toUserId: loggedInUser,
-      status: 'accepted',
+      $or: [
+        { toUserId: loggedInUser, status: 'accepted' },
+        { fromUserId: loggedInUser, status: 'accepted' },
+      ],
     }).populate('fromUserId', 'firstName lastName');
     if (!data) {
       throw new Error('Something went wrong');
     }
+
+    const result = data.map((user) => {
+      return user.fromUserId;
+    });
+
     res.json({
       success: true,
-      data,
+      result,
     });
   } catch (error) {
     res.json({
