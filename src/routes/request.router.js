@@ -97,6 +97,27 @@ requestRouter.patch(
   },
 );
 
+requestRouter.get('/users/requests', authUser, async (req, res) => {
+  try {
+    const data = await ConnectionRequest.find({
+      toUserId: req.user._id,
+      status: 'interested',
+    }).populate('fromUserId', 'firstName lastName photoUrl about ');
+    if (!data) {
+      throw new Error('Request not found');
+    }
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (error) {
+    res.json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
 module.exports = {
   requestRouter,
 };
