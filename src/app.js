@@ -9,18 +9,10 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// import the routers
+// routers
 app.use('/', authRouter);
 app.use('/', profileRouter);
 app.use('/', requestRouter);
-
-
-
-
-
-
-
-
 
 connectDb()
   .then(() => {

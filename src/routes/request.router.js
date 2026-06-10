@@ -58,6 +58,45 @@ requestRouter.post(
   },
 );
 
+requestRouter.patch(
+  '/request/:requestId/review',
+  authUser,
+  async (req, res) => {
+    try {
+      const { requestId } = req.params;
+      const { status } = req.body;
+
+      // only accepted and rejected can be allowed status
+      const ALLOWED_STATUS = ['rejected', 'accepted'];
+      if (!ALLOWED_STATUS.includes(status)) {
+        throw new Error('Not the valid status');
+      }
+      const data = await ConnectionRequest.findOne({
+        status: 'interested',
+        _id: requestId, // this id must be present in DB
+        toUserId: req.user.id, // only the user whom the request have been sent, can accept it not any other authentication user can't
+      });
+      if (!data) {
+        throw new Error('Not the valid request');
+      }
+      // new status update
+      data.status = status;
+
+      await data.save();
+
+      res.json({
+        success: true,
+        data,
+      });
+    } catch (error) {
+      res.json({
+        success: false,
+        message: error.message,
+      });
+    }
+  },
+);
+
 module.exports = {
   requestRouter,
 };
