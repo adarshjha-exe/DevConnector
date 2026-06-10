@@ -121,19 +121,32 @@ requestRouter.get('/users/requests', authUser, async (req, res) => {
 requestRouter.get('/users/allConnection', authUser, async (req, res) => {
   try {
     const loggedInUser = req.user._id;
-    //BUGGY CODE : Find all accepted requests where someone sent me a request and I accepted it | BUG : what if i sent the friend request to virat and virat accepted it ? in that case it will not show those connections.
+    //Fixed : Find all accepted connections — both sent and received by the logged-in user
     const data = await ConnectionRequest.find({
       $or: [
-        { toUserId: loggedInUser, status: 'accepted' },
-        { fromUserId: loggedInUser, status: 'accepted' },
+        { toUserId: loggedInUser, status: 'accepted' }, // requests I received and accepted
+        { fromUserId: loggedInUser, status: 'accepted' }, // requests I sent and they accepted
       ],
-    }).populate('fromUserId', 'firstName lastName');
+    })
+      // populate both sides — because logged-in user can be on either side of the request
+      // if I am fromUserId → toUserId has the other person's details
+      // if I am toUserId   → fromUserId has the other person's details
+      .populate('fromUserId', 'firstName lastName')
+      .populate('toUserId', 'firstName lastName');
     if (!data) {
       throw new Error('Something went wrong');
     }
 
-    const result = data.map((user) => {
-      return user.fromUserId;
+    const result = data.map((connectionRequest) => {
+      // logged-in user sent this request → other person is in toUserId
+      if (
+        connectionRequest.fromUserId._id.toString() === loggedInUser.toString()
+      ) {
+        return connectionRequest.toUserId;
+      }
+
+      // logged-in user received this request → other person is in fromUserId
+      return connectionRequest.fromUserId;
     });
 
     res.json({
